@@ -3,6 +3,7 @@ use proc_macro::TokenStream;
 use std::hash::{Hash, Hasher};
 
 #[proc_macro]
+#[doc = include_str!("../README.md")]
 pub fn comptime(code: TokenStream) -> TokenStream {
 	let mut args = std::env::args();
 	let Some(out_dir) = args
@@ -13,7 +14,6 @@ pub fn comptime(code: TokenStream) -> TokenStream {
 	};
 
 	let code = format!("fn main(){{ println!(\"{{:?}}\", {{ {code} }}) }}");
-
 	let mut hash = std::collections::hash_map::DefaultHasher::new();
 	code.hash(&mut hash);
 	let hash = hash.finish();
@@ -37,6 +37,7 @@ pub fn comptime(code: TokenStream) -> TokenStream {
 		let rustc = std::process::Command::new("rustc")
 			.stderr(std::process::Stdio::piped())
 			.args([&input_file, "-o", &output_file])
+			.args(["-L", &out_dir])
 			.output();
 
 		match rustc {

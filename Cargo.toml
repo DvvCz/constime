@@ -2,9 +2,13 @@
 name = "constime"
 authors = ["David Cruz <davidccodes@gmail.com>"]
 description = "Zig's comptime for Rust with zero dependencies. Mostly something to play around with until more stuff is const fn."
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 
 [lib]
 proc-macro = true
+doctest = false
+
+[dev-dependencies]
+ureq = "2.6.1"
