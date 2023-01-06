@@ -1,7 +1,8 @@
 # Constime
 
 This is a tiny alternative to https://github.com/nhynes/comptime-rs, with no dependencies and <70 LOC.
-Note that it does not support externs, however.
+
+Note that it currently does not support externs.
 
 ```rust
 fn main() {
