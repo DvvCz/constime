@@ -1,6 +1,11 @@
 # Constime
 
-This is a tiny alternative to <https://github.com/nhynes/comptime-rs>, with no dependencies and <70 LOC.
+This is a tiny alternative to <https://github.com/nhynes/comptime-rs>, with no dependencies and <80 LOC.
+
+## Usage
+```bash
+cargo add constime
+```
 
 Note that in order to use dependencies in `comptime!`, you must either:
 * Have it as a normal dependency in `[dependencies]`.

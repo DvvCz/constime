@@ -5,11 +5,17 @@ use std::hash::{Hash, Hasher};
 #[proc_macro]
 #[doc = include_str!("../README.md")]
 pub fn comptime(code: TokenStream) -> TokenStream {
-	let mut args = std::env::args();
-	let Some(out_dir) = args
-		.position(|arg| arg == "--out-dir")
-		.and_then(|_| args.next())
-	else {
+	let (mut externs, mut out_dir, mut args) = (vec![], None, std::env::args());
+	while let Some(arg) = args.next() {
+		if arg == "--out-dir" {
+			out_dir = args.next();
+		} else if arg == "--extern" {
+			externs.push("--extern".to_owned());
+			externs.push(args.next().unwrap());
+		}
+	}
+
+	let Some(out_dir) = out_dir else {
 		return "compile_error!(\"Could not find output directory.\")".parse().unwrap()
 	};
 

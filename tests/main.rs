@@ -13,6 +13,10 @@ fn test_base() {
 
 #[test]
 fn test_ureq() {
-	let retrieved = comptime! { ureq::get("https://gist.githubusercontent.com/DvvCz/9972f1627f8418badb1736d6899d5f44/raw/b31a3627458a698dc029750dfc2572a6f8a131cf/test.txt").call().unwrap().into_string().unwrap() };
+	let retrieved = comptime! {
+		extern crate ureq;
+		ureq::get("https://gist.githubusercontent.com/DvvCz/9972f1627f8418badb1736d6899d5f44/raw/b31a3627458a698dc029750dfc2572a6f8a131cf/test.txt").call().unwrap().into_string().unwrap()
+	};
+
 	assert_eq!(retrieved, "Hey there!");
 }
