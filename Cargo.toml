@@ -1,6 +1,7 @@
 [package]
 name = "constime"
 authors = ["David Cruz <davidccodes@gmail.com>"]
+repository = "https://github.com/DvvCz/Constime"
 description = "Zig's comptime for Rust with zero dependencies. Mostly something to play around with until more stuff is const fn."
 version = "0.2.1"
 edition = "2021"

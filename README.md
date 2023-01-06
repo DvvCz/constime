@@ -13,6 +13,8 @@ Note that in order to use dependencies in `comptime!`, you must either:
   * A `build.rs` file to make rust compiles the dependencies.
   * Explicitly importing the crate using `extern crate`.
 
+## Example
+
 ```rust
 fn main() {
 	use constime::comptime;
