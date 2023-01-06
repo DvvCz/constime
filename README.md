@@ -7,11 +7,9 @@ This is a tiny alternative to <https://github.com/nhynes/comptime-rs>, with no d
 cargo add constime
 ```
 
-Note that in order to use dependencies in `comptime!`, you must either:
-* Have it as a normal dependency in `[dependencies]`.
-* Have it as a build dependency in `[build-dependencies]`, alongside:
-  * A `build.rs` file to make rust compiles the dependencies.
-  * Explicitly importing the crate using `extern crate`.
+Dependencies in `comptime!` can be stored in either `[dependencies]` or `[build-dependencies]`, and must be explicitly imported using `extern crate`.
+
+You will also need a build.rs file in order to force `[build-dependencies]` to compile.
 
 ## Example
 

@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use std::hash::{Hash, Hasher};
@@ -20,6 +22,7 @@ pub fn comptime(code: TokenStream) -> TokenStream {
 	};
 
 	let code = format!("fn main(){{ println!(\"{{:?}}\", {{ {code} }}) }}");
+
 	let mut hash = std::collections::hash_map::DefaultHasher::new();
 	code.hash(&mut hash);
 	let hash = hash.finish();
