@@ -1,8 +1,21 @@
-# Constime
+<h1 align="center"> constime </h1>
 
-This is a tiny alternative to <https://github.com/nhynes/comptime-rs>, with no dependencies and <80 LOC.
+<div align="center">
+	<a href="https://github.com/DvvCz/constime/actions">
+		<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/DvvCz/constime/ci.yml?label=build">
+	</a>
+	<a href="https://crates.io/crates/constime">
+		<img alt="Crates.io Version" src="https://img.shields.io/crates/v/constime">
+	</a>
+	<a href="https://github.com/DvvCz/constime/releases/latest">
+		<img alt="GitHub Release" src="https://img.shields.io/github/v/release/DvvCz/constime">
+	</a>
+</div>
+
+> Zig's `comptime`, for Rust, with zero dependencies
 
 ## Usage
+
 ```bash
 cargo add constime
 ```
