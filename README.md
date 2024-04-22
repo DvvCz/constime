@@ -1,5 +1,9 @@
 <h1 align="center"> constime </h1>
 
+<p align="center">
+	Zig's <code>comptime</code> for Rust, with zero dependencies.
+</p>
+
 <div align="center">
 	<a href="https://github.com/DvvCz/constime/actions">
 		<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/DvvCz/constime/ci.yml?label=build">
@@ -11,8 +15,6 @@
 		<img alt="GitHub Release" src="https://img.shields.io/github/v/release/DvvCz/constime">
 	</a>
 </div>
-
-> Zig's `comptime`, for Rust, with zero dependencies
 
 ## Usage
 
