@@ -2,78 +2,114 @@
 
 extern crate proc_macro;
 use proc_macro::TokenStream;
-use std::hash::{Hash, Hasher};
+
+use std::hash::{BuildHasher, RandomState};
+use std::io::Write;
+
+/// Properly passes an error message to the compiler without crashing macro engines.
+macro_rules! build_error {
+	($($arg:tt)*) => {
+		format!("compile_error!(r#\"{}\"#)", format!($($arg)*))
+			.parse::<TokenStream>()
+			.unwrap()
+	};
+}
 
 #[proc_macro]
 #[doc = include_str!("../README.md")]
 pub fn comptime(code: TokenStream) -> TokenStream {
-	let (mut externs, mut out_dir, mut args) = (vec![], None, std::env::args());
+	let mut out_dir = None;
+	let mut externs = vec![];
+
+	let mut args = std::env::args();
 	while let Some(arg) = args.next() {
-		if arg == "--out-dir" {
-			out_dir = args.next();
-		} else if arg == "--extern" {
-			externs.push("--extern".to_owned());
+		// Push deps to rustc so you don't need to explicitly link with 'extern crate'
+		if arg == "--extern" {
 			externs.push(args.next().unwrap());
+		} else if arg == "--out-dir" {
+			out_dir = args.next().map(std::path::PathBuf::from);
+		}
+	}
+
+	if out_dir.is_none() {
+		let out = std::env::current_dir().unwrap().join("target").join("debug").join("deps");
+		if out.exists() {
+			out_dir = Some(out);
 		}
 	}
 
 	let Some(out_dir) = out_dir else {
-		return "compile_error!(\"Could not find output directory.\")".parse().unwrap()
+		return build_error!("Could not find output directory.");
 	};
 
-	let code = format!("fn main(){{ println!(\"{{:?}}\", {{ {code} }}) }}");
+	let wrapped_code = format!(r#"
+		fn main() {{
+			println!("{{:?}}", {{ {code} }});
+		}}
+	"#);
 
-	let mut hash = std::collections::hash_map::DefaultHasher::new();
-	code.hash(&mut hash);
-	let hash = hash.finish();
+	let hash = RandomState::new().hash_one(&wrapped_code);
 
-	let output_file = format!("{out_dir}{}constime-{hash}.exe", std::path::MAIN_SEPARATOR);
-	let out_path = std::path::Path::new(&output_file);
-	if out_path.exists() {
-		let ext = out_path.with_extension("err");
-		if ext.exists() {
-			return format!(
-				"compile_error!(r#\"{}\"#)",
-				std::fs::read_to_string(ext).expect("Error when compiling")
-			)
-			.parse()
-			.unwrap();
-		}
-	} else {
-		let input_file = format!("{out_dir}{}constime-{hash}.rs", std::path::MAIN_SEPARATOR);
-		std::fs::write(&input_file, code).expect("Failed to write temporary file to output");
+	let constime_base = out_dir.join("constime");
+	if !constime_base.exists() {
+		std::fs::create_dir(&constime_base).unwrap();
+	}
 
-		let rustc = std::process::Command::new("rustc")
+	let evaluator_base = constime_base
+		.join(hash.to_string());
+
+	if !evaluator_base.exists() { // This hasn't been compiled yet.
+		let mut rustc = std::process::Command::new("rustc");
+		rustc
 			.stderr(std::process::Stdio::piped())
-			.args([&input_file, "-o", &output_file])
-			.args(["-L", &out_dir])
-			.output();
+			.stdin(std::process::Stdio::piped())
+			.current_dir(constime_base)
+			.arg("-L")
+			.arg(out_dir)
+			.arg("-o")
+			.arg(&evaluator_base)
+			.arg("-");
 
-		match rustc {
-			Err(why) => return format!("compile_error!(r#\"{}\"#)", why).parse().unwrap(),
-			Ok(output) if !output.status.success() => {
-				return format!(
-					"compile_error!(r#\"{}\"#)",
-					std::str::from_utf8(&output.stderr).unwrap()
-				)
-				.parse()
-				.unwrap()
-			}
-			_ => (),
+		for ext in &externs {
+			rustc.arg("--extern").arg(ext);
+		}
+
+		let Ok(mut rustc) = rustc.spawn() else {
+			return build_error!("Failed to spawn rustc");
+		};
+
+		// Avoid deadlock by containing stdin handling in its own scope
+		if let Some(mut stdin) = rustc.stdin.take() {
+			if stdin.write_all(wrapped_code.as_bytes()).is_err() {
+				return build_error!("Failed to write to rustc stdin");
+			};
+		} else {
+			return build_error!("Failed to open stdin for rustc");
+		}
+
+		let Ok(output) = rustc.wait_with_output() else {
+			return build_error!("Failed to wait for rustc");
+		};
+
+		if !output.status.success() {
+			return build_error!("{}", String::from_utf8_lossy(&output.stderr));
 		}
 	}
 
-	let out = std::process::Command::new(&output_file)
+	let out = std::process::Command::new(&evaluator_base)
 		.stdout(std::process::Stdio::piped())
 		.output();
 
 	match out {
-		Err(why) => {
-			std::fs::write(out_path.with_extension("err"), why.to_string()).unwrap();
-			format!("compile_error!(r#\"Failed to execute code: {why}\"#)")
-				.parse()
-				.unwrap()
+		Err(why) => return build_error!("Failed to execute code: {why}"),
+		Ok(out) => {
+			let out = String::from_utf8_lossy(&out.stdout);
+
+			let Ok(out) = out.parse() else {
+				return build_error!("Failed to parse output into a TokenStream");
+			};
+
+			return out;
 		}
-		Ok(out) => std::str::from_utf8(&out.stdout).unwrap().parse().unwrap(),
 	}
 }

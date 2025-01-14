@@ -22,9 +22,9 @@
 cargo add constime
 ```
 
-Dependencies in `comptime!` can be stored in either `[dependencies]` or `[build-dependencies]`, and must be explicitly imported using `extern crate`.
+Dependencies in `comptime!` can be stored in either `[dependencies]` or `[build-dependencies]`.
 
-You will also need a build.rs file in order to force `[build-dependencies]` to compile.
+If you use build dependencies, you will need to explicitly link with `extern crate` and a `build.rs` file to force them to compile.
 
 ## Example
 
@@ -35,7 +35,12 @@ fn main() {
 	// Let's use a pure-build time dependency
 	println!("Here's a fact about the number 5: {}", comptime! {
 		extern crate ureq;
-		ureq::get("http://numbersapi.com/5/math").call().unwrap().into_string().unwrap()
+
+		ureq::get("http://numbersapi.com/5/math")
+			.call()
+			.unwrap()
+			.into_string()
+			.unwrap()
 	});
 
 	// Standard library works fine too.

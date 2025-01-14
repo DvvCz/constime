@@ -1,9 +1,10 @@
 [package]
 name = "constime"
-authors = ["David Cruz <davidccodes@gmail.com>"]
-repository = "https://github.com/DvvCz/Constime"
 description = "Zig's comptime for Rust with zero dependencies. Mostly something to play around with until more stuff is const fn."
-version = "0.2.2"
+version = "0.3.0"
+
+authors = ["David Cruz <david@codebycruz.com>"]
+repository = "https://github.com/DvvCz/Constime"
 edition = "2021"
 license = "MIT"
 
@@ -12,4 +13,4 @@ proc-macro = true
 doctest = false
 
 [dev-dependencies]
-ureq = "2.6.1"
+ureq = "2.12.1"
