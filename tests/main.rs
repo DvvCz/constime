@@ -1,7 +1,16 @@
 use constime::comptime;
 
 #[test]
+fn test_const() {
+	const FORMATTED: &str = comptime! { format!("abc{}", 218) };
+	assert_eq!(FORMATTED, "abc218");
+}
+
+#[test]
 fn test_base() {
+	let x: Result<&str, std::env::VarError> = comptime! { std::env::var("CARGO_PKG_NAME") };
+	assert_eq!(x, Ok(env!("CARGO_PKG_NAME")));
+
 	assert_eq!(comptime! { 239 + 259 * 23 }, 239 + 259 * 23);
 	assert_eq!(comptime! { 2 + 259 * 7 }, 2 + 259 * 7);
 	assert_eq!(comptime! { String::from("test") }, "test");

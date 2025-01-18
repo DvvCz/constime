@@ -9,7 +9,7 @@ use std::io::Write;
 /// Properly passes an error message to the compiler without crashing macro engines.
 macro_rules! build_error {
 	($($arg:tt)*) => {
-		format!("compile_error!(r#\"{}\"#)", format!($($arg)*))
+		format!("compile_error!(r#\"{}\"#);", format!($($arg)*))
 			.parse::<TokenStream>()
 			.unwrap()
 	};
@@ -17,7 +17,7 @@ macro_rules! build_error {
 
 #[proc_macro]
 #[doc = include_str!("../README.md")]
-pub fn comptime(code: TokenStream) -> TokenStream {
+pub fn comptime(mut code: TokenStream) -> TokenStream {
 	let mut out_dir = None;
 	let mut externs = vec![];
 
@@ -25,7 +25,10 @@ pub fn comptime(code: TokenStream) -> TokenStream {
 	while let Some(arg) = args.next() {
 		// Push deps to rustc so you don't need to explicitly link with 'extern crate'
 		if arg == "--extern" {
-			externs.push(args.next().unwrap());
+			let ext = args.next().unwrap();
+			if !externs.contains(&ext) {
+				externs.push(ext)
+			}
 		} else if arg == "--out-dir" {
 			out_dir = args.next().map(std::path::PathBuf::from);
 		}
@@ -92,7 +95,9 @@ pub fn comptime(code: TokenStream) -> TokenStream {
 		};
 
 		if !output.status.success() {
-			return build_error!("{}", String::from_utf8_lossy(&output.stderr));
+			// Extend the code so that autocompletion works.
+			code.extend(build_error!("{}", String::from_utf8_lossy(&output.stderr)));
+			return code;
 		}
 	}
 
