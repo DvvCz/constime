@@ -55,3 +55,11 @@ fn main() {
 	);
 }
 ```
+
+## Note
+
+**You should get autocomplete and error feedback when using the macro.**
+
+This works with temporary files, which currently aren't automatically cleared.
+
+If you notice your project getting a little large, periodically run `cargo clean` to remove these.
